@@ -55,11 +55,7 @@ def list_removing(message, lst):  # функция, которая удаляе�
 
 def main():  # главная функция, содержит основной функционал бота
 
-    @bot.message_handler(commands=["start"])  # приветственное сообщение
-    def start_message(message):
-        bot.send_message(message.chat.id, f"Привет, я универскальный бот помощник! Располагайся поудобнее.")
-
-    @bot.message_handler(commands=["help", "test"])  # главное меню бота
+    @bot.message_handler(commands=["help", "test", "start"])  # главное меню бота
     def menu(message):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         button_1 = types.KeyboardButton("Расписание")
