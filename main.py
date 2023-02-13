@@ -32,7 +32,7 @@ def listing_sup(message, lst):  # функция, которая выводит 
 
 def list_adding(message, lst):  # функция, которая добавляет в список задолжность, после чего обновляет файл задолжностей
     lst.append(message.text)
-    bot.send_message(message.chat.id, "Задолжность добавлена")
+    bot.send_message(message.chat.id, "Задолжность добавлена.")
     with open("dolgi.txt", "w", encoding="utf-8") as file:
         for line in dolgi_list:
             file.write(line + "\n")
@@ -45,7 +45,7 @@ def list_removing(message, lst):  # функция, которая удаляе�
             back(message)
         else:
             lst.pop(int(message.text)-1)
-            bot.send_message(message.chat.id, "Задолжность удалена")
+            bot.send_message(message.chat.id, "Задолжность удалена.")
             with open("dolgi.txt", "w", encoding="utf-8") as file:
                 for line in dolgi_list:
                     file.write(line + "\n")
@@ -53,13 +53,13 @@ def list_removing(message, lst):  # функция, которая удаляе�
     except ValueError:
         bot.send_message(message.chat.id, "Номер введи, а не число, гений.")
 
-def main():  # main function, that contain most of commands
+def main():  # главная функция, содержит основной функционал бота
 
-    @bot.message_handler(commands=["start"])  # start message
+    @bot.message_handler(commands=["start"])  # приветственное сообщение
     def start_message(message):
         bot.send_message(message.chat.id, f"Привет, я универскальный бот помощник! Располагайся поудобнее.")
 
-    @bot.message_handler(commands=["help", "test"])  # main bot menu
+    @bot.message_handler(commands=["help", "test"])  # главное меню бота
     def menu(message):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         button_1 = types.KeyboardButton("Расписание")
@@ -68,7 +68,7 @@ def main():  # main function, that contain most of commands
         markup.add(button_1, button_2, button_3)
         bot.send_message(message.chat.id, "Выбери то, с чем у тебя самые большие проблемы, xDD", reply_markup=markup)
 
-    @bot.message_handler(content_types=["text"])
+    @bot.message_handler(content_types=["text"])  # основной функционал бота
     def Dolgi(message):
         if message.text == "Долги":
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -87,12 +87,12 @@ def main():  # main function, that contain most of commands
                 listing(message, dolgi_list)
 
         elif message.text == "Добавить задолжность":
-            msg = bot.send_message(message.chat.id, "Введи задолжность и день пересдачи")
+            msg = bot.send_message(message.chat.id, "Введи задолжность и день пересдачи.")
             bot.register_next_step_handler(msg, list_adding, dolgi_list)
 
         elif message.text == "Удалить задолжность":
             listing_sup(message, dolgi_list)
-            msg = bot.send_message(message.chat.id, "Введи номер задолжности, которую надо удалить")
+            msg = bot.send_message(message.chat.id, "Введи номер задолжности, которую надо удалить.")
             bot.register_next_step_handler(msg, list_removing, dolgi_list)
 
         elif message.text == "Назад":
@@ -100,5 +100,5 @@ def main():  # main function, that contain most of commands
 
     bot.infinity_polling()  # обязательная строка для работы бота
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # входная точка кода
     main()
