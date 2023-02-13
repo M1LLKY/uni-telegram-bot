@@ -1,13 +1,15 @@
-#Telegram bot, that take info from university site and send it to user.
+import codecs
+import re
 import config
 import telebot
 from telebot import types
 
-bot = telebot.TeleBot(config.TOKEN)  # put token from config.py into our code
+bot = telebot.TeleBot(config.TOKEN)  # вставить токен из BotFather
 
-AI_list = ["abpba", "odwkoa", "ijadwi"]
+with open("dolgi.txt", "r+", encoding="utf-8") as file:
+    dolgi_list = [line.strip() for line in file]
 
-def back(message):
+def back(message):  # функция, которая возвращает пользователя в главное меню
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     button_1 = types.KeyboardButton("Расписание")
     button_2 = types.KeyboardButton("Домашка")
@@ -15,30 +17,41 @@ def back(message):
     markup.add(button_1, button_2, button_3)
     bot.send_message(message.chat.id, "Выбери то, с чем у тебя самые большие проблемы, xDD", reply_markup=markup)
 
-def listing(message, lst):
+def listing(message, lst):  # функция, которая выводит на экран список задолжнстей с окончанием функцией back()
     bot.send_message(message.chat.id, "————————————————————————")
     for _ in range(len(lst)):
         bot.send_message(message.chat.id, f"{_+1}. {lst[_]}")
     bot.send_message(message.chat.id, "————————————————————————")
     back(message)
 
-def listing_sup(message, lst):
+def listing_sup(message, lst):  # функция, которая выводит на экран список задолжнстей без окончания функцией back()
     bot.send_message(message.chat.id, "————————————————————————")
     for _ in range(len(lst)):
         bot.send_message(message.chat.id, f"{_+1}. {lst[_]}")
     bot.send_message(message.chat.id, "————————————————————————")
 
-def list_adding(message, lst):
+def list_adding(message, lst):  # функция, которая добавляет в список задолжность, после чего обновляет файл задолжностей
     lst.append(message.text)
     bot.send_message(message.chat.id, "Задолжность добавлена")
+    with open("dolgi.txt", "w", encoding="utf-8") as file:
+        for line in dolgi_list:
+            file.write(line + "\n")
     back(message)
 
-def list_removing(message, lst):
-    lst.pop(int(message.text)-1)
-    bot.send_message(message.chat.id, "Задолжность удалена")
-    back(message)
-
-prev = None
+def list_removing(message, lst):  # функция, которая удаляет из списока задолжность, после чего обновляет файл задолжностей
+    try:
+        if (int(message.text) <= 0) or (int(message.text) > len(lst)):
+            bot.send_message(message.chat.id, "Задолжности с таким номером нет.")
+            back(message)
+        else:
+            lst.pop(int(message.text)-1)
+            bot.send_message(message.chat.id, "Задолжность удалена")
+            with open("dolgi.txt", "w", encoding="utf-8") as file:
+                for line in dolgi_list:
+                    file.write(line + "\n")
+            back(message)
+    except ValueError:
+        bot.send_message(message.chat.id, "Номер введи, а не число, гений.")
 
 def main():  # main function, that contain most of commands
 
@@ -57,58 +70,35 @@ def main():  # main function, that contain most of commands
 
     @bot.message_handler(content_types=["text"])
     def Dolgi(message):
-        global prev
         if message.text == "Долги":
-            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            button_1 = types.KeyboardButton("Искусственный интелект")
-            button_2 = types.KeyboardButton("Физическая культура и спорт")
-            button_3 = types.KeyboardButton("Иностранный язык")
-            button_4 = types.KeyboardButton("Математический анализ")
-            button_5 = types.KeyboardButton("Объектно-ориентированное программирование")
-            button_6 = types.KeyboardButton("Правоведение")
-            button_7 = types.KeyboardButton("Русский язык и культура речи")
-            button_8 = types.KeyboardButton("Структуры и алгоритмы обработки данных")
-            button_9 = types.KeyboardButton("Физика")
-            button_10 = types.KeyboardButton("Линейная алгебра и аналитическая геометрия")
-            button_11 = types.KeyboardButton("Математическая логика и теория алгоритмов")
-            markup.add(button_1, button_2, button_3, button_4, button_5,
-                       button_6, button_7, button_8, button_9, button_10, button_11)
-            bot.send_message(message.chat.id, "Выбери предмет", reply_markup=markup)
-
-        elif message.text == "Искусственный интелект":
-            prev = message.text
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
             button_1 = types.KeyboardButton("Просмотреть задолжности")
             button_2 = types.KeyboardButton("Добавить задолжность")
             button_3 = types.KeyboardButton("Удалить задолжность")
-            markup.add(button_1, button_2, button_3)
+            button_4 = types.KeyboardButton("Назад")
+            markup.add(button_1, button_2, button_3, button_4)
             bot.send_message(message.chat.id, f"Выбери действие", reply_markup=markup)
 
-        elif (message.text == "Просмотреть задолжности") and (prev == "Искусственный интелект"):
-            if len(AI_list) == 0:
+        elif message.text == "Просмотреть задолжности":
+            if len(dolgi_list) == 0:
                 bot.send_message(message.chat.id, "Задолжностей нет, красава)")
                 back(message)
             else:
-                listing(message, AI_list)
+                listing(message, dolgi_list)
 
-        elif (message.text == "Добавить задолжность") and (prev == "Искусственный интелект"):
+        elif message.text == "Добавить задолжность":
             msg = bot.send_message(message.chat.id, "Введи задолжность и день пересдачи")
-            bot.register_next_step_handler(msg, list_adding, AI_list)
+            bot.register_next_step_handler(msg, list_adding, dolgi_list)
 
-        elif (message.text == "Удалить задолжность") and (prev == "Искусственный интелект"):
-            listing_sup(message, AI_list)
+        elif message.text == "Удалить задолжность":
+            listing_sup(message, dolgi_list)
             msg = bot.send_message(message.chat.id, "Введи номер задолжности, которую надо удалить")
-            bot.register_next_step_handler(msg, list_removing, AI_list)
+            bot.register_next_step_handler(msg, list_removing, dolgi_list)
 
         elif message.text == "Назад":
-            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            button_1 = types.KeyboardButton("Расписание")
-            button_2 = types.KeyboardButton("Домашка")
-            button_3 = types.KeyboardButton("Долги")
-            markup.add(button_1, button_2, button_3)
-            bot.send_message(message.chat.id, "Выбери то, с чем у тебя самые большие проблемы, xDD", reply_markup=markup)
+            back(message)
 
-    bot.infinity_polling()  # bot running
+    bot.infinity_polling()  # обязательная строка для работы бота
 
 if __name__ == "__main__":
     main()
