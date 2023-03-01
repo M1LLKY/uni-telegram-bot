@@ -40,7 +40,6 @@ def list_adding(message, lst):  # функция, которая добавля�
 
 def list_removing(message, lst):  # функция, которая удаляет из списока задолжность, после чего обновляет файл задолжностей
     try:
-        lst = numering(lst)
         if (int(message.text) <= 0) or (int(message.text) > len(lst)):
             bot.send_message(message.chat.id, "Задолжности с таким номером нет.")
             back(message)
